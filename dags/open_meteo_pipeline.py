@@ -27,6 +27,7 @@ RAW_DATA_DIR = Path(os.getenv("RAW_DATA_DIR", "/opt/airflow/data/raw"))
 PREPARED_DATA_DIR = Path(os.getenv("PREPARED_DATA_DIR", "/opt/airflow/data/prepared"))
 
 
+# Etape de lecture des parametres du pipeline
 def _get_runtime_params() -> dict[str, Any]:
     context = get_current_context()
     params = context["params"]
@@ -40,6 +41,7 @@ def _get_runtime_params() -> dict[str, Any]:
     }
 
 
+# Etape de connexion a PostgreSQL
 def _build_postgres_connection():
     return psycopg2.connect(
         host=os.getenv("TARGET_POSTGRES_HOST", "postgres"),
@@ -63,6 +65,7 @@ with DAG(
     },
     tags=["open-meteo", "postgresql", "tp"],
 ) as dag:
+    # Etape de recuperation des donnees Open-Meteo
     @task(task_id="extract_open_meteo")
     def extract_open_meteo() -> str:
         runtime_params = _get_runtime_params()
@@ -96,6 +99,7 @@ with DAG(
         )
         return str(raw_file_path)
 
+    # Etape de transformation des donnees
     @task(task_id="transform_weather_data")
     def transform_weather_data(raw_file_path: str) -> str:
         runtime_params = _get_runtime_params()
@@ -143,6 +147,7 @@ with DAG(
         )
         return str(prepared_file_path)
 
+    # Etape de chargement des donnees dans PostgreSQL
     @task(task_id="load_weather_to_postgres")
     def load_weather_to_postgres(prepared_file_path: str) -> dict[str, Any]:
         prepared_payload = json.loads(Path(prepared_file_path).read_text(encoding="utf-8"))
@@ -183,6 +188,7 @@ with DAG(
             "message": f"{len(rows)} rows loaded into weather_hourly",
         }
 
+    # Etape d'ecriture du suivi d'ingestion
     @task(task_id="log_ingestion")
     def log_ingestion(load_result: dict[str, Any]) -> None:
         with _build_postgres_connection() as connection:
@@ -210,6 +216,7 @@ with DAG(
                 )
             connection.commit()
 
+    # Etape d'orchestration du pipeline
     raw_data = extract_open_meteo()
     prepared_data = transform_weather_data(raw_data)
     loaded_result = load_weather_to_postgres(prepared_data)
