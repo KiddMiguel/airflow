@@ -1,0 +1,48 @@
+services:
+  airflow:
+    image: ${AIRFLOW_IMAGE}
+    container_name: airflow-pipeline-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./sql:/opt/airflow/sql
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/data/airflow.db
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USER}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+
+      OPEN_METEO_BASE_URL: ${OPEN_METEO_BASE_URL}
+      RAW_DATA_DIR: ${RAW_DATA_DIR}
+      PREPARED_DATA_DIR: ${PREPARED_DATA_DIR}
+
+      PIPELINE_CITY: ${PIPELINE_CITY}
+      PIPELINE_LATITUDE: ${PIPELINE_LATITUDE}
+      PIPELINE_LONGITUDE: ${PIPELINE_LONGITUDE}
+      PIPELINE_HOURLY_VARIABLES: ${PIPELINE_HOURLY_VARIABLES}
+
+      TARGET_POSTGRES_HOST: ${TARGET_POSTGRES_HOST}
+      TARGET_POSTGRES_PORT: ${TARGET_POSTGRES_PORT}
+      TARGET_POSTGRES_DB: ${TARGET_POSTGRES_DB}
+      TARGET_POSTGRES_USER: ${TARGET_POSTGRES_USER}
+      TARGET_POSTGRES_PASSWORD: ${TARGET_POSTGRES_PASSWORD}
+    command: airflow standalone
+
+  postgres:
+    image: postgres:15
+    container_name: postgres-pipeline-api
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${TARGET_POSTGRES_DB}
+      POSTGRES_USER: ${TARGET_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TARGET_POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
