@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+
+logs/
+doc/
+postgres-data/
+
+.DS_Store
+Thumbs.db
