@@ -134,12 +134,6 @@ Verifier le suivi d'ingestion :
 docker compose exec postgres psql -U meteo -d meteo -c "SELECT run_id, city, records_loaded, status, message, created_at FROM ingestion_log ORDER BY created_at DESC LIMIT 10;"
 ```
 
-### Preuves a conserver
-
-- capture du graphe Airflow du run nominal
-- capture de `SELECT COUNT(*) FROM weather_hourly`
-- capture de `SELECT ... FROM ingestion_log`
-
 ## Cas 2 - Anomalie qualite
 
 ### Configuration
@@ -193,13 +187,6 @@ Verifier que le volume de donnees chargees n'a pas augmente pour ce run :
 docker compose exec postgres psql -U meteo -d meteo -c "SELECT COUNT(*) AS total_rows FROM weather_hourly;"
 ```
 
-### Preuves a conserver
-
-- capture Airflow du chemin anomalie
-- capture de `quality_anomalies`
-- capture de `ingestion_log` avec `status = 'quality_failed'`
-- capture montrant l'absence de nouveau chargement metier
-
 ## Cas 3 - Relance sans doublon
 
 ### Configuration
@@ -248,45 +235,3 @@ Visuel attendu :
 - le nombre total de lignes reste stable si les memes donnees sont rechargees
 - la requete `HAVING COUNT(*) > 1` ne retourne aucune ligne
 
-### Preuves a conserver
-
-- capture du premier comptage
-- capture du second comptage identique
-- capture de la requete anti-doublon vide
-
-## Logs Airflow a verifier
-
-Pour verifier les logs applicatifs :
-
-```powershell
-docker compose logs airflow
-```
-
-Tu peux aussi verifier les logs d'une tache depuis l'interface Airflow.
-
-Visuels attendus :
-
-- logs d'extraction par ville
-- logs de transformation
-- logs de controle qualite
-- logs de chargement
-- logs d'anomalie si echec qualite
-
-## Captures recommandees pour le rendu
-
-- graphe Airflow du cas nominal
-- graphe Airflow du cas anomalie qualite
-- requete `\dt`
-- preuve `weather_hourly`
-- preuve `ingestion_log`
-- preuve `quality_anomalies`
-- preuve relance sans doublon
-
-## Ordre conseille d'execution
-
-1. verifier les tables PostgreSQL
-2. executer le cas nominal
-3. executer le cas anomalie qualite
-4. executer le cas de relance
-5. recuperer les captures
-6. mettre a jour le README final du TP 5
