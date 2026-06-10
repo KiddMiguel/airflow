@@ -25,3 +25,12 @@ CREATE TABLE IF NOT EXISTS ingestion_log (
     message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS quality_anomalies (
+    id BIGSERIAL PRIMARY KEY,
+    pipeline_name VARCHAR(150) NOT NULL,
+    run_id VARCHAR(250) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    reason TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
