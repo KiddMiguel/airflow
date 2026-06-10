@@ -4,8 +4,10 @@ __pycache__/
 
 logs/
 data/
-doc/
 postgres-data/
+doc/*
+!doc/screenshots/
+!doc/screenshots/*.png
 
 .DS_Store
 Thumbs.db

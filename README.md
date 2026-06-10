@@ -369,12 +369,38 @@ docker compose exec postgres psql -U meteo -d meteo -c "SELECT city, latitude, l
 
 ### Preuve des logs Airflow
 
-Preuves attendues :
-- logs d'extraction ;
-- logs de transformation ;
-- logs de controle qualite ;
-- logs de chargement ;
-- logs d'anomalie si echec qualite.
+Captures disponibles pour la partie logs :
+
+![Dossier des logs Airflow](doc/screenshots/preuve_logs_dossier.png)
+
+![Log extraction](doc/screenshots/preuve_logs_extraction.png)
+
+![Log transformation](doc/screenshots/preuve_logs_transformation.png)
+
+![Log controle qualite valide](doc/screenshots/preuve_logs_qualite_valide.png)
+
+![Log branchement nominal](doc/screenshots/preuve_logs_branchement_nominal.png)
+
+![Log chargement PostgreSQL](doc/screenshots/preuve_logs_chargement_postgresql.png)
+
+![Log journalisation d'ingestion](doc/screenshots/preuve_logs_journalisation_ingestion.png)
+
+Exemples de preuves deja presentes dans les logs Airflow :
+- controle qualite en echec simule :
+  `logs/dag_id=open_meteo_pipeline/run_id=manual__2026-06-10T105006+0000/task_id=quality_check/attempt=1.log:14`
+  `Controle qualite simule en echec pour Paris`
+- branchement vers anomalie :
+  `logs/dag_id=open_meteo_pipeline/run_id=manual__2026-06-10T105006+0000/task_id=branch_on_quality/attempt=1.log:12`
+  `Qualite invalide, branchement vers la journalisation des anomalies`
+- ecriture des anomalies :
+  `logs/dag_id=open_meteo_pipeline/run_id=manual__2026-06-10T105006+0000/task_id=log_quality_anomalies/attempt=1.log:12`
+  `Ecriture de 1 anomalies qualite pour le run manual__2026-06-10T10:50:06+00:00`
+
+Commande utile pour retrouver ces lignes :
+
+```powershell
+rg -n "Extraction Open-Meteo|Transformation des donnees|Controle qualite|Qualite validee|Qualite invalide|Chargement PostgreSQL|Ecriture du suivi d'ingestion|Ecriture de .* anomalies qualite" logs
+```
 
 ## Limites eventuelles du travail rendu
 
